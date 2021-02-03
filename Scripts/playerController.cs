@@ -14,6 +14,7 @@ public class playerController : MonoBehaviour
     private int count;
     private float movementX;
     private float movementY;
+    private Vector3 posicionInicial;
 
     // Start is called before the first frame update
     void Start()
@@ -22,6 +23,7 @@ public class playerController : MonoBehaviour
         count = 0;
         SetCountText();
         winTextObject.SetActive(false);
+        posicionInicial = transform.position;
     }
 
     void OnMove(InputValue movementValue)
@@ -45,25 +47,38 @@ public class playerController : MonoBehaviour
     {
         Vector3 movement = new Vector3(movementX, 0.0f, movementY);
         rb.AddForce(movement * speed);
+
+        // recogemos los datos del acelerometro
+        Vector3 dir = Vector3.zero;
+        dir.x = -Input.acceleration.y;
+        dir.z = Input.acceleration.x;
+        if (dir.sqrMagnitude > 1)
+            dir.Normalize();
+
+        dir *= Time.deltaTime;
+        transform.Translate(dir * speed);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("PickUp")){
-
+        if (other.gameObject.CompareTag("PickUp"))
+        {
             other.gameObject.SetActive(false);
-            count++;
+            count = count + 1;
+
             SetCountText();
+
         }
+
         if (other.gameObject.CompareTag("Enemy"))
         {
             if (count > 0)
             {
-                count--;
+                count = count - 1;
                 SetCountText();
             }
-            other.gameObject.transform.position = new Vector4(9, 1, 9);
+            other.gameObject.transform.position = new Vector4(0, 5, 4);
+            transform.position = posicionInicial;
         }
-
     }
 }
